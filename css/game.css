@@ -1,0 +1,10 @@
+body{
+    background-color: rgb(37, 17, 0);
+    overflow: hidden;
+}
+
+#plr{
+    position: absolute;
+    left: 100px;
+    top: 100px;
+}
