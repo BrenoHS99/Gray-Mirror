@@ -2,8 +2,8 @@ const plr = document.getElementById("plr")
 
 let speed = 3
 
-let plrPosX = 250
-let plrPosY = 100
+let plrPosX = 350
+let plrPosY = 150
 
 let plrOldPosX = 0
 let plrOldPosY = 0
@@ -69,14 +69,15 @@ class Obstacle{
 
 // array com as instâncias de objetos do cenário
 let obstacles = [
-    box = new Obstacle(100, 700, 300, 300, "sprites/objects/box.png"),
+    box = new Obstacle(100, 350, 200, 200, "sprites/objects/box.png"),
+    box1 = new Obstacle(325, 475, 150, 150, "sprites/objects/box.png"),
 
-    bed = new Obstacle(100, 100, 150, 200, "sprites/objects/bed.png"),
+    bed = new Obstacle(100, 100, 200, 250, "sprites/objects/bed.png"),
 
-    wall1 = new Obstacle(0, 0, 30, 9999, "sprites/objects/wall.png"),
-    wall2 = new Obstacle(1900, 0, 30, 9999, "sprites/objects/wall.png"),
-    wall3 = new Obstacle(0, 0, 1900, 30, "sprites/objects/wall.png"),
-    wall4 = new Obstacle(0, 970, 1900, 999, "sprites/objects/wall.png"),
+    wall = new Obstacle(0, 0, 100, 9999, "sprites/objects/wall.png"),
+    wall1 = new Obstacle(1500, 0, 300, 9999, "sprites/objects/wall.png"),
+    wall2 = new Obstacle(0, 0, 1900, 100, "sprites/objects/wall.png"),
+    wall3 = new Obstacle(0, 650, 1900, 999, "sprites/objects/wall.png"),
 ]
 
 function MovePlayer(){ // método para mover o jogador
