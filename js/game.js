@@ -17,24 +17,27 @@ let plrHeight = 150
 plr.style.width = plrWidth + "px"
 plr.style.height = plrHeight + "px"
 
+let onBattle = false
+
+let battleOption = 1
+
+let playerHpValue = 100
+let healAmount = 3
+let defendChance = 1
+let magicCharge = 0
+
+let currentEnemy
+
+
 document.addEventListener("keydown", function(e){
-    keys[e.key] = true
+    if (!onBattle){
+        keys[e.key] = true
+    }
 })
 
 document.addEventListener("keyup", function(e){
     keys[e.key] = false
 })
-
-window.addEventListener("wheel", function(e){ // trava o zoom da pagina
-    if(e.ctrlKey){
-        e.preventDefault()
-    }
-}, {passive: false})
-window.addEventListener("keydown", function(e){
-    if(e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=')){ // trava o zoom da pagina
-        e.preventDefault();
-    }
-});
 
 class Obstacle{
     constructor(x, y, width, height, src){
@@ -65,23 +68,161 @@ class Obstacle{
             plrPosY = plrOldPosY
         }
     }
+
+    collisionFunction(Action){
+        if(
+            plrPosX < this.x + this.width &&
+            plrPosX + plrWidth > this.x &&
+            plrPosY < this.y + this.height &&
+            plrPosY + plrHeight > this.y
+        ){
+            Action()
+        }
+    }
+
+    destroy(objectsArray){
+        if (this.element && this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element)
+        }
+        this.element = null
+        const index = objectsArray.indexOf(this)
+        if (index > -1) objectsArray.splice(index, 1)
+    }
 }
 
-// array com as instâncias de objetos do cenário
+class Enemy extends Obstacle {
+    constructor(x, y, width, height, src, hp, name, damageDealt) {
+        super(x, y, width, height, src)
+        this.hp = hp
+        this.name = name
+        this.damageDealt = damageDealt
+
+        this.hpText = document.createElement("h1")
+        document.body.appendChild(this.hpText)
+        Object.assign(this.hpText.style, {
+            color: "white",
+            position: "absolute",
+            left: this.x + "px",
+            top: this.y - 45 + "px",
+            fontFamily: "Courier New",
+            zIndex: 2
+        })
+    }
+
+    takeDamage(damageTaken) {
+        this.hp -= damageTaken
+        UpdatePlrStatus()
+        this.hpText.textContent = this.name + ": " + this.hp
+        if (this.hp <= 0) {
+            onBattle = false
+            battleHud.element.style.display = "none"
+            battleOption = 1
+
+            if (this.hpText && this.hpText.parentNode) {
+                this.hpText.parentNode.removeChild(this.hpText)
+            }
+            this.hpText = null
+
+            this.destroy(enemies)
+        }
+    }
+
+    checkBattle() {
+        if (
+            plrPosX < this.x + this.width &&
+            plrPosX + plrWidth > this.x &&
+            plrPosY < this.y + this.height &&
+            plrPosY + plrHeight > this.y
+        ) {
+            this.hpText.textContent = this.name + ": " + this.hp
+            onBattle = true
+            currentEnemy = this
+            plr.src = "sprites/player/noahIdle.gif"
+        }
+    }
+}
+
+// VARIÁVEL DA FASE -----------------------------------------------------------------------------------------------------------------
 let obstacles = [
     box = new Obstacle(100, 350, 200, 200, "sprites/objects/box.png"),
     box1 = new Obstacle(325, 475, 150, 150, "sprites/objects/box.png"),
 
     bed = new Obstacle(100, 100, 200, 250, "sprites/objects/bed.png"),
 
-    wall = new Obstacle(0, 0, 100, 9999, "sprites/objects/wall.png"),
-    wall1 = new Obstacle(1500, 0, 300, 9999, "sprites/objects/wall.png"),
+    wall = new Obstacle(0, 0, 100, 999999, "sprites/objects/wall.png"),
+    wall1 = new Obstacle(1500, 0, 99999, 999999, "sprites/objects/wall.png"),
     wall2 = new Obstacle(0, 0, 1900, 100, "sprites/objects/wall.png"),
-    wall3 = new Obstacle(0, 650, 1900, 999, "sprites/objects/wall.png"),
+    wall3 = new Obstacle(0, 650, 1900, 99999, "sprites/objects/wall.png"),
 ]
 
+let enemies = [
+    enemy = new Enemy(1200, 125, 125, 125, "sprites/enemies/cacos.gif", 75, "Cacos", RandomNumber(5, 15)),
+    enemy1 = new Enemy(1200, 475, 125, 125, "sprites/enemies/cacos.gif", 75, "Cacos", RandomNumber(5, 15)),
+]
+// ----------------------------------------------------------------------------------------------------------------------------------
+
+let battleHud = new Obstacle(plrPosX - 60, plrPosY - 55, 185, 50, "sprites/battleoptions/FightSelected.png")
+battleHud.element.style.display = "none"
+
+let playerHp = document.createElement("h1")
+document.body.appendChild(playerHp)
+playerHp.textContent = "Vida: " + playerHpValue
+
+Object.assign(playerHp.style, {
+    color: "white",
+    fontSize: "50px",
+    fontFamily: "Courier New",
+    position: "absolute",
+    left: "15px",
+    top: "0px",
+    margin: "0"
+})
+
+let defendChanceText = document.createElement("h1")
+document.body.appendChild(defendChanceText)
+defendChanceText.textContent = "Chance de Defesa: " + defendChance + "/5"
+
+Object.assign(defendChanceText.style, {
+    color: "white",
+    fontSize: "50px",
+    fontFamily: "Courier New",
+    position: "absolute",
+    left: "350px",
+    top: "0px",
+    margin: "0"
+})
+
+let magicText = document.createElement("h1")
+document.body.appendChild(magicText)
+magicText.textContent = "Magia: " + magicCharge + "%"
+
+Object.assign(magicText.style, {
+    color: "white",
+    fontSize: "50px",
+    fontFamily: "Courier New",
+    position: "absolute",
+    left: "1100px",
+    top: "0px",
+    margin: "0"
+})
+
+let healText = document.createElement("h1")
+document.body.appendChild(healText)
+healText.textContent = "Cura: " + healAmount
+
+Object.assign(healText.style, {
+    color: "white",
+    fontSize: "50px",
+    fontFamily: "Courier New",
+    position: "absolute",
+    left: "1500px",
+    top: "0px",
+    margin: "0"
+})
+
 function MovePlayer(){ // método para mover o jogador
-    walking = false
+    if(!onBattle){
+        walking = false
 
     plrOldPosX = plrPosX
     plrOldPosY = plrPosY
@@ -112,13 +253,151 @@ function MovePlayer(){ // método para mover o jogador
     for (obs of obstacles){
         obs.collision()
     }
+    for (enm of enemies){
+        enm.checkBattle()
+    }
+
+    battleHud.element.style.left = (plrPosX - 60) + "px"
+    battleHud.element.style.top  = (plrPosY - 55) + "px"
 
     plr.style.top = plrPosY + "px"
     plr.style.left = plrPosX + "px"
+    }
+}
+
+document.addEventListener("keydown", function(e){ // botões para batalha
+    if(onBattle){
+        if(e.key == "ArrowRight"){
+            battleOption++
+            if(battleOption >= 5){
+                battleOption = 1
+            }
+        }
+        if(e.key == "ArrowLeft"){
+            battleOption--
+            if(battleOption <= 0){
+                battleOption = 4
+            }
+        }
+
+        if(e.key == "z" || e.key == "Z"){
+            switch(battleOption){
+            case 1:
+                magicCharge += RandomNumber(10, 15)
+                currentEnemy.takeDamage(RandomNumber(5, 15))
+                PlayerTakeDamage(currentEnemy.damageDealt)
+                if (magicCharge > 100){
+                    magicCharge = 100
+                    UpdatePlrStatus()
+                }
+                if(defendChance < 5){
+                    defendChance++
+                    UpdatePlrStatus()
+                }
+                break;
+            case 2:
+                if(RandomNumber(1, defendChance) != 1){
+                    defendChance = 1
+                    PlayerTakeDamage(-20)
+                    currentEnemy.takeDamage(5)
+                }
+                else{
+                    PlayerTakeDamage(currentEnemy.damageDealt)
+                }
+                break;
+            case 3:
+                if(magicCharge >= 100){
+                    magicCharge = 0
+                    currentEnemy.takeDamage(RandomNumber(20, 50))
+                    UpdatePlrStatus()
+                }
+                break;
+            case 4:
+                if(healAmount > 0){
+                    healAmount--
+                    playerHpValue = 100
+                    UpdatePlrStatus()
+                }
+                break;
+            }
+        }
+    }
+})
+
+function PlayerTakeDamage(dmg){
+    playerHpValue -= dmg
+    UpdatePlrStatus()
+}
+
+function UpdatePlrStatus(){
+    if(playerHpValue <= 0){
+        location.reload()
+    }
+
+    playerHp.textContent = "Vida: " + playerHpValue
+    healText.textContent = "Cura: " + healAmount
+    defendChanceText.textContent = "Chance de Defesa: " + defendChance + "/5"
+    magicText.textContent = "Magia: " + magicCharge + "%"
+
+    if(healAmount <= 0){
+        healText.style.color = "red"
+    }
+    else{
+        healText.style.color = "white"
+    }
+
+    if(defendChance >= 5){
+        defendChanceText.style.color = "yellow"
+    }
+    else if(defendChance <= 1){
+        defendChanceText.style.color = "red"
+    }
+    else{
+        defendChanceText.style.color = "white"
+    }
+
+    if(magicCharge >= 100){
+        magicText.style.color = "yellow"
+    }
+    else{
+        magicText.style.color = "white"
+    }
+}
+UpdatePlrStatus()
+
+function RandomNumber(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function BattleController(){
+    if (onBattle){
+        battleHud.element.style.display = "block"
+        
+        switch(battleOption){
+            case 1:
+                battleHud.element.src = "sprites/battleoptions/FightSelected.png"
+                break;
+            case 2:
+                battleHud.element.src = "sprites/battleoptions/DefendSelected.png"
+                break;
+            case 3:
+                battleHud.element.src = "sprites/battleoptions/MagicSelected.png"
+                break;
+            case 4:
+                battleHud.element.src = "sprites/battleoptions/HealSelected.png"
+                break;
+        }
+    }
+}
+
+function BattleCheck(){
+    onBattle = true
+    plr.src = "sprites/player/noahIdle.gif"
 }
 
 function Main(){
     MovePlayer()
+    BattleController()
 }
 
 setInterval(Main, 10)
