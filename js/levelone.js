@@ -1,3 +1,7 @@
+let gameSong = new Audio("../audio/songs/graymirror.mp3")
+
+let battleEnter = new Audio("../audio/sfx/battleEnter.wav")
+
 const plr = document.getElementById("plr")
 
 let speed = 3
@@ -28,10 +32,18 @@ let magicCharge = 0
 
 let currentEnemy
 
+let enemiesDefeated = 0
+let totalEnemies
+
+let nextLevel = "../levels/leveltwo.html"
 
 document.addEventListener("keydown", function(e){
     if (!onBattle){
         keys[e.key] = true
+    }
+    gameSong.loop = true
+    if(!gameSong.onplaying){
+        gameSong.play()
     }
 })
 
@@ -91,11 +103,12 @@ class Obstacle{
 }
 
 class Enemy extends Obstacle {
-    constructor(x, y, width, height, src, hp, name, damageDealt) {
+    constructor(x, y, width, height, src, hp, name, damageDealt1, damageDealt2) {
         super(x, y, width, height, src)
         this.hp = hp
         this.name = name
-        this.damageDealt = damageDealt
+        this.damageDealt1 = damageDealt1
+        this.damageDealt2 = damageDealt2
 
         this.hpText = document.createElement("h1")
         document.body.appendChild(this.hpText)
@@ -123,6 +136,10 @@ class Enemy extends Obstacle {
             }
             this.hpText = null
 
+            enemiesDefeated++
+            if (enemiesDefeated >= totalEnemies){
+                window.location.replace(nextLevel)
+            }
             this.destroy(enemies)
         }
     }
@@ -134,34 +151,37 @@ class Enemy extends Obstacle {
             plrPosY < this.y + this.height &&
             plrPosY + plrHeight > this.y
         ) {
+            battleEnter.play()
             this.hpText.textContent = this.name + ": " + this.hp
             onBattle = true
             currentEnemy = this
-            plr.src = "sprites/player/noahIdle.gif"
+            plr.src = "../sprites/player/noahIdle.gif"
         }
     }
 }
 
 // VARIÁVEL DA FASE -----------------------------------------------------------------------------------------------------------------
 let obstacles = [
-    box = new Obstacle(100, 350, 200, 200, "sprites/objects/box.png"),
-    box1 = new Obstacle(325, 475, 150, 150, "sprites/objects/box.png"),
+    box = new Obstacle(100, 350, 200, 200, "../sprites/objects/box.png"),
+    box1 = new Obstacle(325, 475, 150, 150, "../sprites/objects/box.png"),
 
-    bed = new Obstacle(100, 100, 200, 250, "sprites/objects/bed.png"),
+    bed = new Obstacle(100, 100, 200, 250, "../sprites/objects/bed.png"),
 
-    wall = new Obstacle(0, 0, 100, 999999, "sprites/objects/wall.png"),
-    wall1 = new Obstacle(1500, 0, 99999, 999999, "sprites/objects/wall.png"),
-    wall2 = new Obstacle(0, 0, 1900, 100, "sprites/objects/wall.png"),
-    wall3 = new Obstacle(0, 650, 1900, 99999, "sprites/objects/wall.png"),
+    wall = new Obstacle(0, 0, 100, 999999, "../sprites/objects/wall.png"),
+    wall1 = new Obstacle(1500, 0, 99999, 999999, "../sprites/objects/wall.png"),
+    wall2 = new Obstacle(0, 0, 1900, 100, "../sprites/objects/wall.png"),
+    wall3 = new Obstacle(0, 650, 1900, 99999, "../sprites/objects/wall.png"),
 ]
 
 let enemies = [
-    enemy = new Enemy(1200, 125, 125, 125, "sprites/enemies/cacos.gif", 75, "Cacos", RandomNumber(5, 15)),
-    enemy1 = new Enemy(1200, 475, 125, 125, "sprites/enemies/cacos.gif", 75, "Cacos", RandomNumber(5, 15)),
+    enemy = new Enemy(1200, 125, 125, 125, "../sprites/enemies/cacos.gif", 75, "Cacos", 5, 15),
+    enemy1 = new Enemy(1200, 475, 125, 125, "../sprites/enemies/cacos.gif", 75, "Cacos", 5, 15),
 ]
 // ----------------------------------------------------------------------------------------------------------------------------------
 
-let battleHud = new Obstacle(plrPosX - 60, plrPosY - 55, 185, 50, "sprites/battleoptions/FightSelected.png")
+totalEnemies = enemies.length
+
+let battleHud = new Obstacle(plrPosX - 60, plrPosY - 55, 185, 50, "../sprites/battleoptions/FightSelected.png")
 battleHud.element.style.display = "none"
 
 let playerHp = document.createElement("h1")
@@ -244,10 +264,10 @@ function MovePlayer(){ // método para mover o jogador
         plrPosX += speed
     }
     if(walking && !plr.src.includes("noahWalking.gif")){
-        plr.src = "sprites/player/noahWalking.gif"
+        plr.src = "../sprites/player/noahWalking.gif"
     }
     if(!walking && !plr.src.includes("noahIdle.gif")){
-        plr.src = "sprites/player/noahIdle.gif"
+        plr.src = "../sprites/player/noahIdle.gif"
     }
 
     for (obs of obstacles){
@@ -268,12 +288,24 @@ function MovePlayer(){ // método para mover o jogador
 document.addEventListener("keydown", function(e){ // botões para batalha
     if(onBattle){
         if(e.key == "ArrowRight"){
+            let battleSelectSound = new Audio("../audio/sfx/buttonHover.wav")
+            battleSelectSound.play()
+            battleSelectSound.addEventListener("ended", function(){
+                battleSelectSound = null
+            })
+
             battleOption++
             if(battleOption >= 5){
                 battleOption = 1
             }
         }
         if(e.key == "ArrowLeft"){
+            let battleSelectSound = new Audio("../audio/sfx/buttonHover.wav")
+            battleSelectSound.play()
+            battleSelectSound.addEventListener("ended", function(){
+                battleSelectSound = null
+            })
+
             battleOption--
             if(battleOption <= 0){
                 battleOption = 4
@@ -283,9 +315,15 @@ document.addEventListener("keydown", function(e){ // botões para batalha
         if(e.key == "z" || e.key == "Z"){
             switch(battleOption){
             case 1:
+                let skillSound = new Audio("../audio/sfx/attack.mp3")
+                skillSound.play()
+                skillSound.addEventListener("ended", function(){
+                    skillSound = null
+                })
+
                 magicCharge += RandomNumber(10, 15)
                 currentEnemy.takeDamage(RandomNumber(5, 15))
-                PlayerTakeDamage(currentEnemy.damageDealt)
+                PlayerTakeDamage(RandomNumber(currentEnemy.damageDealt1, currentEnemy.damageDealt2))
                 if (magicCharge > 100){
                     magicCharge = 100
                     UpdatePlrStatus()
@@ -294,31 +332,61 @@ document.addEventListener("keydown", function(e){ // botões para batalha
                     defendChance++
                     UpdatePlrStatus()
                 }
-                break;
+                break
             case 2:
                 if(RandomNumber(1, defendChance) != 1){
+                    let skillSound = new Audio("../audio/sfx/defend.wav")
+                    skillSound.play()
+                    skillSound.addEventListener("ended", function(){
+                        skillSound = null
+                    })
+
                     defendChance = 1
-                    PlayerTakeDamage(-20)
+                    PlayerTakeDamage(-50)
+                    if (playerHpValue >= 100){
+                        playerHpValue = 100
+                    }
                     currentEnemy.takeDamage(5)
                 }
                 else{
-                    PlayerTakeDamage(currentEnemy.damageDealt)
+                    let skillSound = new Audio("../audio/sfx/attack.mp3")
+                    skillSound.play()
+                    skillSound.addEventListener("ended", function(){
+                        skillSound = null
+                    })
+                    PlayerTakeDamage(RandomNumber(currentEnemy.damageDealt1, currentEnemy.damageDealt2))
                 }
-                break;
+                break
             case 3:
                 if(magicCharge >= 100){
+                    let skillSound = new Audio("../audio/sfx/magic.wav")
+                    skillSound.play()
+                    skillSound.addEventListener("ended", function(){
+                        skillSound = null
+                    })
+
                     magicCharge = 0
-                    currentEnemy.takeDamage(RandomNumber(20, 50))
+                    currentEnemy.takeDamage(RandomNumber(30, 70))
+                    PlayerTakeDamage(-70)
+                    if (playerHpValue >= 100){
+                        playerHpValue = 100
+                    }
                     UpdatePlrStatus()
                 }
-                break;
+                break
             case 4:
                 if(healAmount > 0){
+                    let skillSound = new Audio("../audio/sfx/heal.mp3")
+                    skillSound.play()
+                    skillSound.addEventListener("ended", function(){
+                        skillSound = null
+                    })
+
                     healAmount--
                     playerHpValue = 100
                     UpdatePlrStatus()
                 }
-                break;
+                break
             }
         }
     }
@@ -375,24 +443,24 @@ function BattleController(){
         
         switch(battleOption){
             case 1:
-                battleHud.element.src = "sprites/battleoptions/FightSelected.png"
-                break;
+                battleHud.element.src = "../sprites/battleoptions/FightSelected.png"
+                break
             case 2:
-                battleHud.element.src = "sprites/battleoptions/DefendSelected.png"
-                break;
+                battleHud.element.src = "../sprites/battleoptions/DefendSelected.png"
+                break
             case 3:
-                battleHud.element.src = "sprites/battleoptions/MagicSelected.png"
-                break;
+                battleHud.element.src = "../sprites/battleoptions/MagicSelected.png"
+                break
             case 4:
-                battleHud.element.src = "sprites/battleoptions/HealSelected.png"
-                break;
+                battleHud.element.src = "../sprites/battleoptions/HealSelected.png"
+                break
         }
     }
 }
 
 function BattleCheck(){
     onBattle = true
-    plr.src = "sprites/player/noahIdle.gif"
+    plr.src = "../sprites/player/noahIdle.gif"
 }
 
 function Main(){

@@ -1,0 +1,29 @@
+html, body{
+    margin:0;
+    height: 100%;
+}
+
+body{
+    background-image: url("../sprites/graymirror.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#startButton{
+    background-image: url("../sprites/button.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    font-size: 100px;
+    font-family: "Courier New";
+    background-color: transparent;
+    border: transparent;
+    position: absolute;
+    left: 400px;
+    top: 500px
+}
+
+#startButton:hover{
+    transform: scale(1.15);
+    cursor: pointer;
+}
