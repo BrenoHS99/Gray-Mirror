@@ -27,3 +27,10 @@ body{
     transform: scale(1.15);
     cursor: pointer;
 }
+
+#credits{
+    font-family: "Courier New";
+    margin: 0;
+    position: absolute;
+    font-size: 20px;
+}
